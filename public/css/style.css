@@ -2,4 +2,9 @@ body{
     background-color: darkgrey;
 }
 img{
+    border: 2px solid black;
+}
+.hoz{
+    display: flex;
+    justify-content: center;
 }
