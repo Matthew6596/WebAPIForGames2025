@@ -26,7 +26,7 @@ app.get("/additem",(req,res)=>{
     res.sendFile(getpath("additem.html"));
 });
 app.get("/statuscode",(req,res)=>{
-    res.sendStatus(402); //api.weather.gove/gridpints/TOP
+    res.sendStatus(402); //api.weather.gov/gridpoints/TOP
 });
 
 /*setTimeout(()=>{
