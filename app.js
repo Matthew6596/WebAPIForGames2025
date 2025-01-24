@@ -39,7 +39,7 @@ app.get("/classIndex",(req,res)=>{res.sendFile(ppath("classIndex.html"));});
 app.get("/food",async(req,res)=>{
     try{
         const food = await Food.find();
-        food.sort((a,b)=>a.toObject().ranking-b.toObject().ranking);
+        food.sort((a,b)=>a.ranking-b.ranking);
         res.json(food);
     }catch(e){res.status(500).json({error:"Failed to get food."});}
 });
@@ -54,9 +54,18 @@ app.get("/food/:id",async(req,res)=>{
 app.post("/addfood",async(req,res)=>{
     try {
         const newFood = new Food(req.body);
-        const saveFood = await newFood.save();
+        
+        //check and adjust the ranking values
+        const food = await Food.find();
+        food.forEach((e)=>{
+            if(newFood.ranking<=e.ranking)Food.findByIdAndUpdate(e.id,{ranking:e.ranking+1},{new:true,runValidators:true}).then((up)=>console.log(up.toJSON()));
+        });
+
+        //Save new food
+        await newFood.save();
+        
         //res.status(201).json(saveFood);
-        res.redirect("/classIndex");
+        res.redirect("/");
     } catch (e) {res.status(501).json({error:"Failed to add new food."});}
 });
 //update
@@ -78,10 +87,17 @@ app.delete("/deletefood/name",async(req,res)=>{
     } catch (e) {
         res.status(404).json({error:"Food not found."});
     }*/
-    Food.findOneAndDelete(req.query).then((deletedFood)=>{
+    Food.findOneAndDelete(req.query).then(async(deletedFood)=>{
         if(deletedFood.length===0) return res.status(404).json({error:"Food not found."});
+        
+        //check and adjust the ranking values
+        const food = await Food.find();
+        food.forEach((e)=>{
+            if(deletedFood.ranking<e.ranking)Food.findByIdAndUpdate(e.id,{ranking:e.ranking-1},{new:true,runValidators:true}).then((up)=>console.log(up.toJSON())).catch((e)=>{res.status(400).json({error:"Failed to update food rankings"})});
+        });
         res.json({message:"Food deleted successfully."});
     }).catch((e)=>{res.status(404).json({error:"Food not found."});});
+
 });
 //=====End-Routes=====
 
