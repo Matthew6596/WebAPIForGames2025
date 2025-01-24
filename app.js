@@ -54,12 +54,20 @@ app.get("/food/:id",async(req,res)=>{
 app.post("/addfood",async(req,res)=>{
     try {
         const newFood = new Food(req.body);
-        
+
+        //negative and 0 ranking not allowed
+        if(newFood.ranking<=0)newFood.ranking=1;
+
         //check and adjust the ranking values
         const food = await Food.find();
+        let largestRank=1;
         food.forEach((e)=>{
+            if(e.ranking>largestRank)largestRank=e.ranking;
             if(newFood.ranking<=e.ranking)Food.findByIdAndUpdate(e.id,{ranking:e.ranking+1},{new:true,runValidators:true}).then((up)=>console.log(up.toJSON()));
         });
+
+        //make sure no gaps in ranking
+        if(newFood.ranking>largestRank)newFood.ranking=largestRank+1;
 
         //Save new food
         await newFood.save();
