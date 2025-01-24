@@ -46,7 +46,7 @@ const getList = async(_msg)=>{
 const deleteListItem = async(name)=>{
     try {
         const _q = "/deletefood/name?name="+name;
-        const res = await fetch(_q,{method:"delete"}); //get
+        const res = await fetch(_q,{method:"delete"});
         if(!res.ok)throw new Error("Failed to delete list item");        
         //refresh list
         getList("Successfully deleted "+name);
@@ -62,10 +62,8 @@ const editListItem = async(id)=>{
 const getEditItem = async(id)=>{
     try {
         const _q = "/food/"+id;
-        const res = await fetch(_q,{method:"get"}); //get
-        if(!res.ok)throw new Error("Failed to get item to edit");        
-        //refresh list
-        getList("Successfully deleted "+name);
+        const res = await fetch(_q,{method:"get"});
+        if(!res.ok)throw new Error("Failed to get item to edit");
     } catch (e) {console.error("Error: ",e); container.innerHTML="<p style='color:red'>Failed to delete list item</p>";}
 }
 
