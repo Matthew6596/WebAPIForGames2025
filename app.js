@@ -2,6 +2,8 @@ const express = require("express"); //install w/ npm install express mongoose bo
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser"); //unrelated but important: https://api.thecatapi.com/v1/images/search?mime_types=gif
 const path = require("path");
+const session = require("express-session");
+const bcrypt = require("bcryptjs");
 
 const app = express();
 const port = process.env.port||3000;
@@ -14,13 +16,25 @@ app.use(express.static(path.join(__dirname,"public")));
 //Set up middleware to parse json requests
 app.use(bodyParser.json());
 app.use(express.urlencoded({extended:true}));
+//Setting up session variable
+app.use(session({secret:"12345",resave:false,saveUninitialized:true,cookie:{secure:false/*true for https*/}}));
+
+//Create fake user
+const user = {
+    admin:bcrypt.hashSync("12345",10),
+};
+
+function isAuthenticated(req,res,next){
+    if(req.session.user)return next();
+    res.redirect("/classLogin");
+}
 
 //MongoDB connection setup
 const mongoURI = "mongodb://localhost:27017/crudapp"; //store const uri
 mongoose.connect(mongoURI); //connect
 const db = mongoose.connection; //store connection
 db.on("error",console.error.bind(console,"MongoDB connection error")); //connection error handling
-db.once("open",()=>{console.log("Connected to MongoDB Database")})
+db.once("open",()=>{console.log("Connected to MongoDB Database")});
 
 //Setup Mongoose Schema
 const foodSchema = new mongoose.Schema({
@@ -31,10 +45,8 @@ const foodSchema = new mongoose.Schema({
 const Food = mongoose.model("Food",foodSchema,"fooddata");
 
 //=====Routes=====
-app.get("/",(req,res)=>{
-    res.sendFile(ppath("index.html"));
-});
-app.get("/classIndex",(req,res)=>{res.sendFile(ppath("classIndex.html"));});
+app.get("/",(req,res)=>{res.sendFile(ppath("additem.html"));}); //<<<This does nothing!
+app.get("/classIndex",isAuthenticated,(req,res)=>{res.sendFile(ppath("classIndex.html"));});
 //read
 app.get("/food",async(req,res)=>{
     try{
@@ -76,6 +88,18 @@ app.post("/addfood",async(req,res)=>{
         res.redirect("/");
     } catch (e) {res.status(501).json({error:"Failed to add new food."});}
 });
+app.post("/classLogin",(req,res)=>{
+    const {username,password}=req.body;
+    console.log(user[username]+", "+user[password]); //undefined
+    if(user[username]&&bcrypt.compareSync(password,user[username])){
+        req.session.user = username;
+        res.redirect("/");
+    }else{
+        console.log("bruh error");
+        req.session.error = "invalid user";
+        res.redirect("/classLogin")
+    }
+});
 //update
 app.put("/updatefood/:id",async(req,res)=>{
     //example promise statement for async
@@ -106,6 +130,10 @@ app.delete("/deletefood/name",async(req,res)=>{
         res.json({message:"Food deleted successfully."});
     }).catch((e)=>{res.status(404).json({error:"Food not found."});});
 
+});
+
+app.get("/classLogin",(req,res)=>{
+    res.sendFile(ppath("classLogin.html"));
 });
 //=====End-Routes=====
 
