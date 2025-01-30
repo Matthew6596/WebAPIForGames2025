@@ -13,8 +13,12 @@ const port = process.env.port||3000;
 //Helper for getting files in public folder dir
 function ppath(p){return path.join(__dirname,"public",p);}
 
-//Middleware for sending static data
-app.use(express.static(path.join(__dirname,"public")));
+//Middleware for sending static data (only for .css and .js) -stole from gpt :(
+app.use((req, res, next) => { //previous express.static let users bypass authentication by using /page.html instead of /page
+    if (!req.path.endsWith('.html'))
+      express.static(path.join(__dirname, 'public'))(req, res, next);
+    else next();
+});
 //Set up middleware to parse json requests
 app.use(bodyParser.json());
 app.use(express.urlencoded({extended:true}));
@@ -23,7 +27,7 @@ app.use(session({secret:"12345",resave:false,saveUninitialized:true,cookie:{secu
 
 function isAuthenticated(req,res,next){
     if(req.session.user)return next();
-    res.redirect("/classLogin");
+    res.redirect("/login");
 }
 
 //MongoDB connection setup
@@ -34,9 +38,15 @@ db.on("error",console.error.bind(console,"MongoDB connection error")); //connect
 db.once("open",()=>{console.log("Connected to MongoDB Database")});
 
 //=====Routes=====
-app.get("/",(req,res)=>{res.sendFile(ppath("additem.html"));}); //<<<This does nothing!
+app.get("/",(req,res)=>{res.sendFile(ppath("index.html"));});
+app.get("/additem.html",isAuthenticated,(req,res)=>{res.sendFile(ppath("additem.html"));});
 app.get("/classIndex",isAuthenticated,(req,res)=>{res.sendFile(ppath("classIndex.html"));});
-app.get("/classAddUser",isAuthenticated,(req,res)=>{res.sendFile(ppath("classAddUser.html"));});
+app.get("/classAddUser",(req,res)=>{res.sendFile(ppath("classAddUser.html"));});
+app.get("/addfooditem",isAuthenticated,(req,res)=>{res.sendFile(ppath("additem.html"));});
+app.get("/userauthenticated",isAuthenticated,(req,res)=>{res.sendStatus(201);});
+app.get("/register",(req,res)=>{res.sendFile(ppath("register.html"));});
+app.get("/currentuser",isAuthenticated,(req,res)=>{res.json(req.session.user);});
+
 //read
 app.get("/food",async(req,res)=>{
     try{
@@ -87,17 +97,17 @@ app.post("/adduser",async(req,res)=>{
         res.redirect("/classIndex");
     } catch (e) {res.status(501).json({error:"Failed to add new user: "+e});}
 });
-app.post("/classLogin",async(req,res)=>{
+app.post("/login",async(req,res)=>{
     const {username,password}=req.body;
 
     const user = await User.findOne({username});
     //if username exists and password matches user list
     if(user&&bcrypt.compareSync(password,user.password)){ 
         req.session.user = username;
-        res.redirect("/classIndex");
+        res.redirect("/");
     }else{
         req.session.error = "invalid user";
-        res.redirect("/classLogin");
+        res.redirect("/login");
     }
 });
 //update
@@ -126,8 +136,11 @@ app.delete("/deletefood/name",async(req,res)=>{
 app.get("/classLogin",(req,res)=>{
     res.sendFile(ppath("classLogin.html"));
 });
+app.get("/login",(req,res)=>{
+    res.sendFile(ppath("login.html"));
+});
 app.get("/logout",(req,res)=>{
-    req.session.destroy(()=>{res.redirect("/classLogin")});
+    req.session.destroy(()=>{res.redirect("/")});
 });
 //=====End-Routes=====
 
