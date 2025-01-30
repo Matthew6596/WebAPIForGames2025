@@ -4,6 +4,8 @@ const bodyParser = require("body-parser"); //unrelated but important: https://ap
 const path = require("path");
 const session = require("express-session");
 const bcrypt = require("bcryptjs");
+const User = require("./models/User");
+const Food = require("./models/Food");
 
 const app = express();
 const port = process.env.port||3000;
@@ -19,11 +21,6 @@ app.use(express.urlencoded({extended:true}));
 //Setting up session variable
 app.use(session({secret:"12345",resave:false,saveUninitialized:true,cookie:{secure:false/*true for https*/}}));
 
-//Create fake user
-const user = {
-    admin:bcrypt.hashSync("12345",10),
-};
-
 function isAuthenticated(req,res,next){
     if(req.session.user)return next();
     res.redirect("/classLogin");
@@ -36,17 +33,10 @@ const db = mongoose.connection; //store connection
 db.on("error",console.error.bind(console,"MongoDB connection error")); //connection error handling
 db.once("open",()=>{console.log("Connected to MongoDB Database")});
 
-//Setup Mongoose Schema
-const foodSchema = new mongoose.Schema({
-    name:String,
-    foodType:String,
-    ranking:Number
-});
-const Food = mongoose.model("Food",foodSchema,"fooddata");
-
 //=====Routes=====
 app.get("/",(req,res)=>{res.sendFile(ppath("additem.html"));}); //<<<This does nothing!
 app.get("/classIndex",isAuthenticated,(req,res)=>{res.sendFile(ppath("classIndex.html"));});
+app.get("/classAddUser",isAuthenticated,(req,res)=>{res.sendFile(ppath("classAddUser.html"));});
 //read
 app.get("/food",async(req,res)=>{
     try{
@@ -88,16 +78,26 @@ app.post("/addfood",async(req,res)=>{
         res.redirect("/");
     } catch (e) {res.status(501).json({error:"Failed to add new food."});}
 });
-app.post("/classLogin",(req,res)=>{
+app.post("/adduser",async(req,res)=>{
+    try {
+        const newUser = new User(req.body);
+        newUser.password = bcrypt.hashSync(newUser.password,10);
+        //Save new user
+        await newUser.save();
+        res.redirect("/classIndex");
+    } catch (e) {res.status(501).json({error:"Failed to add new user: "+e});}
+});
+app.post("/classLogin",async(req,res)=>{
     const {username,password}=req.body;
-    console.log(user[username]+", "+user[password]); //undefined
-    if(user[username]&&bcrypt.compareSync(password,user[username])){
+
+    const user = await User.findOne({username});
+    //if username exists and password matches user list
+    if(user&&bcrypt.compareSync(password,user.password)){ 
         req.session.user = username;
-        res.redirect("/");
+        res.redirect("/classIndex");
     }else{
-        console.log("bruh error");
         req.session.error = "invalid user";
-        res.redirect("/classLogin")
+        res.redirect("/classLogin");
     }
 });
 //update
@@ -110,15 +110,6 @@ app.put("/updatefood/:id",async(req,res)=>{
 });
 //delete
 app.delete("/deletefood/name",async(req,res)=>{
-    /*try {
-        const foodName = req.query;
-        const food = await Food.find(foodName);
-        if(food.length === 0)return res.status(404).json({error:"Food not found."});
-        const deletedFood = await Food.findOneAndDelete(foodName);
-        res.json({message:"Food deleted successfully."});
-    } catch (e) {
-        res.status(404).json({error:"Food not found."});
-    }*/
     Food.findOneAndDelete(req.query).then(async(deletedFood)=>{
         if(deletedFood.length===0) return res.status(404).json({error:"Food not found."});
         
@@ -134,6 +125,9 @@ app.delete("/deletefood/name",async(req,res)=>{
 
 app.get("/classLogin",(req,res)=>{
     res.sendFile(ppath("classLogin.html"));
+});
+app.get("/logout",(req,res)=>{
+    req.session.destroy(()=>{res.redirect("/classLogin")});
 });
 //=====End-Routes=====
 
