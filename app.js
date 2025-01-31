@@ -62,6 +62,12 @@ app.get("/food/:id",async(req,res)=>{
         res.json(food);
     } catch (e) {res.status(500).json({error:"Failed to get food."});}
 });
+app.get("/user",async(req,res)=>{
+    try{
+        const user = await User.find();
+        res.json(user);
+    }catch(e){res.status(500).json({error:"Failed to get users."});}
+});
 //create
 app.post("/addfood",async(req,res)=>{
     try {
