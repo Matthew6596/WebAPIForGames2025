@@ -7,9 +7,10 @@ const session = require("express-session");
 const bcrypt = require("bcryptjs");
 const User = require("./models/User");
 const Food = require("./models/Food");
+const Highscore = require("./models/Highscore");
 
 const app = express();
-const port = process.env.port||3000;
+const port = process.env.port||5000;
 
 //Helper for getting files in public folder dir
 function ppath(p){return path.join(__dirname,"public",p);}
@@ -149,6 +150,29 @@ app.get("/login",(req,res)=>{
 app.get("/logout",(req,res)=>{
     req.session.destroy(()=>{res.redirect("/")});
 });
+
+//---AsteroidAvoiders---
+app.get("/AsteroidAvoidance",(req,res)=>{res.sendFile(ppath("AsteroidAvoidance/index.html"));});
+app.get("/getAsteroidLeaderboards",async(req,res)=>{
+    try{
+        const scores = await Highscore.find({game:"AsteroidAvoidance"});
+        scores.sort((a,b)=>b.score-a.score);
+        console.log(scores);
+        res.json(scores);
+    }catch(e){res.status(500).json({error:"Failed to get leaderboard scores."});}
+});
+app.post("/addAsteroidHighscore",async(req,res)=>{
+    try {
+        const newScore = new Highscore(req.body);
+        newScore.game = "AsteroidAvoidance";
+        //Save new highscore
+        await newScore.save();
+        res.sendStatus(200);
+    } catch (e) {res.status(500).json({error:"Failed to add new user: "+e});}
+});
+//---End AsteroidAvoiders---
+
+
 //=====End-Routes=====
 
 //Starts server
