@@ -1,3 +1,4 @@
+require("dotenv").config();
 const express = require("express"); //install w/ npm install express mongoose body-parser --save
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser"); //unrelated but important: https://api.thecatapi.com/v1/images/search?mime_types=gif
@@ -15,7 +16,7 @@ function ppath(p){return path.join(__dirname,"public",p);}
 
 //Middleware for sending static data (only for .css and .js) -stole from gpt :(
 app.use((req, res, next) => { //previous express.static let users bypass authentication by using /page.html instead of /page
-    if (!req.path.endsWith('.html'))
+    if (!req.path.endsWith('.html')) //just realized perhaps instead of this private .html pages shouldn't be in public folder
       express.static(path.join(__dirname, 'public'))(req, res, next);
     else next();
 });
@@ -23,7 +24,7 @@ app.use((req, res, next) => { //previous express.static let users bypass authent
 app.use(bodyParser.json());
 app.use(express.urlencoded({extended:true}));
 //Setting up session variable
-app.use(session({secret:"12345",resave:false,saveUninitialized:true,cookie:{secure:false/*true for https*/}}));
+app.use(session({secret:process.env.SESSION_SECRET,resave:false,saveUninitialized:true,cookie:{secure:false/*true for https*/}}));
 
 function isAuthenticated(req,res,next){
     if(req.session.user)return next();
@@ -31,7 +32,7 @@ function isAuthenticated(req,res,next){
 }
 
 //MongoDB connection setup
-const mongoURI = "mongodb://localhost:27017/crudapp"; //store const uri
+const mongoURI = process.env.MONGODB_URI; //store const uri
 mongoose.connect(mongoURI); //connect
 const db = mongoose.connection; //store connection
 db.on("error",console.error.bind(console,"MongoDB connection error")); //connection error handling
