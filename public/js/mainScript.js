@@ -3,7 +3,7 @@ const addBtn = document.getElementById("addBtn");
 const registerBtn = document.getElementById("registerBtn");
 const loginBtn = document.getElementById("loginBtn");
 const logoutBtn = document.getElementById("logoutBtn");
-var currentUser;
+var currentUser=false;
 
 const getList = async(_msg)=>{
     if(currentUser){
@@ -25,7 +25,7 @@ const getList = async(_msg)=>{
             const li = document.createElement("li");
 
             let delete_btn,update_btn;
-            if(loggedin){
+            if(currentUser){
                 //Create delete button for list item
                 delete_btn = document.createElement("button");
                 delete_btn.innerText = "⌫";
@@ -92,12 +92,14 @@ const getEditItem = async(id)=>{
 
 const getSessionUser = async()=>{
     try{
-        const res = await fetch("/currentuser");
+        await fetch("/currentuser").then(async(res)=>{
         if(res.ok){
             const _user = await res.json();
             document.getElementById("currUser").innerText="Logged in as: "+_user;
             currentUser = _user;
+            getList();
         }
+    }).catch((e)=>{console.error(e);});
     }catch(e){console.error(e);}
 }
 
@@ -115,4 +117,3 @@ const getRandCatImg = async()=>{
 
 getRandCatImg(); //more important so do this first
 getSessionUser();
-getList();
