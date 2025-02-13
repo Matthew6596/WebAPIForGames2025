@@ -64,8 +64,7 @@ const getList = async(_msg)=>{
 
 const deleteListItem = async(name)=>{
     try {
-        const _a = await fetch("/userauthenticated");
-        if(_a.status!=201){
+        if(!currentUser){
             if(_a.status==200) window.location.href = "/login";
             throw new Error("Failed to authenticate user");
         }

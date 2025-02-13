@@ -41,13 +41,13 @@ db.once("open",()=>{console.log("Connected to MongoDB Database")});
 //=====Routes=====
 app.get("/",(req,res)=>{
     res.sendFile(ppath("index.html"));
-    if(req.session.user)res.json(req.session.user);
+    //if(req.session.user)res.json(req.session.user);
 });
 app.get("/additem.html",isAuthenticated,(req,res)=>{res.sendFile(ppath("additem.html"));});
 app.get("/classIndex",isAuthenticated,(req,res)=>{res.sendFile(ppath("classIndex.html"));});
 app.get("/classAddUser",(req,res)=>{res.sendFile(ppath("classAddUser.html"));});
 app.get("/addfooditem",isAuthenticated,(req,res)=>{res.sendFile(ppath("additem.html"));});
-app.get("/userauthenticated",(req,res)=>{ if(req.session.user)res.sendStatus(201); else res.sendStatus(401); });
+//app.get("/userauthenticated",(req,res)=>{ if(req.session.user)res.sendStatus(201); else res.sendStatus(401); });
 app.get("/register",(req,res)=>{res.sendFile(ppath("register.html"));});
 app.get("/currentuser",(req,res)=>{if(req.session.user)res.json(req.session.user); else res.sendStatus(401);});
 
