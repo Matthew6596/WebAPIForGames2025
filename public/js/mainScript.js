@@ -91,16 +91,16 @@ const getEditItem = async(id)=>{
 }
 
 const getSessionUser = async()=>{
-    try{
-        await fetch("/currentuser").then(async(res)=>{
+    await fetch("/currentuser").then(async(res)=>{
         if(res.ok){
             const _user = await res.json();
             document.getElementById("currUser").innerText="Logged in as: "+_user;
             currentUser = _user;
             getList();
+        }else{
+            getList();
         }
-    }).catch((e)=>{console.error(e); getList();});
-    }catch(e){console.error(e);}
+    }).catch((e)=>{console.error(e);});
 }
 
 const getRandCatImg = async()=>{
