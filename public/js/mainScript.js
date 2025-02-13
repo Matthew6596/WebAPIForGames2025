@@ -99,7 +99,7 @@ const getSessionUser = async()=>{
             currentUser = _user;
             getList();
         }
-    }).catch((e)=>{console.error(e);});
+    }).catch((e)=>{console.error(e); getList();});
     }catch(e){console.error(e);}
 }
 
