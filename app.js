@@ -44,7 +44,7 @@ app.get("/additem.html",isAuthenticated,(req,res)=>{res.sendFile(ppath("additem.
 app.get("/classIndex",isAuthenticated,(req,res)=>{res.sendFile(ppath("classIndex.html"));});
 app.get("/classAddUser",(req,res)=>{res.sendFile(ppath("classAddUser.html"));});
 app.get("/addfooditem",isAuthenticated,(req,res)=>{res.sendFile(ppath("additem.html"));});
-app.get("/userauthenticated",isAuthenticated,(req,res)=>{res.sendStatus(201);});
+app.get("/userauthenticated",(req,res)=>{ if(req.session.user)res.sendStatus(201); else res.sendStatus(401); });
 app.get("/register",(req,res)=>{res.sendFile(ppath("register.html"));});
 app.get("/currentuser",isAuthenticated,(req,res)=>{res.json(req.session.user);});
 
