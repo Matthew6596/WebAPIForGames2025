@@ -3,10 +3,10 @@ const addBtn = document.getElementById("addBtn");
 const registerBtn = document.getElementById("registerBtn");
 const loginBtn = document.getElementById("loginBtn");
 const logoutBtn = document.getElementById("logoutBtn");
+var currentUser;
 
 const getList = async(_msg)=>{
-    const loggedin = await isUserAuthenticated();
-    if(loggedin){
+    if(currentUser){
         registerBtn.remove();
         loginBtn.remove();
     }else{
@@ -47,7 +47,7 @@ const getList = async(_msg)=>{
             //Finish list item and append buttons
             li.className="food";
             li.innerHTML = `${e.name} <i>${e.foodType}</i>`;
-            if(loggedin){
+            if(currentUser){
                 li.appendChild(delete_btn);
                 li.appendChild(update_btn);
             }
@@ -77,13 +77,6 @@ const deleteListItem = async(name)=>{
     } catch (e) {console.error("Error: ",e); container.innerHTML=`<p style='color:red'>${e}</p>`;}
 }
 
-const isUserAuthenticated = async()=>{
-    try {
-        const _a = await fetch("/userauthenticated");
-        return (_a.status==201)
-    } catch (e) {return false;}
-}
-
 const editListItem = async(id)=>{
     try{
         window.location.href = "/addfooditem?id="+id;
@@ -99,13 +92,12 @@ const getEditItem = async(id)=>{
 }
 
 const getSessionUser = async()=>{
-    const loggedin = await isUserAuthenticated();
-    if(!loggedin)return;
     try{
         const res = await fetch("/currentuser");
         if(res.ok){
             const _user = await res.json();
             document.getElementById("currUser").innerText="Logged in as: "+_user;
+            currentUser = _user;
         }
     }catch(e){console.error(e);}
 }
@@ -123,5 +115,5 @@ const getRandCatImg = async()=>{
 }
 
 getRandCatImg(); //more important so do this first
-getList();
 getSessionUser();
+getList();
