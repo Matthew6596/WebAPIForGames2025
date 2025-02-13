@@ -9,14 +9,64 @@
 <body class="hoz">
     <div>
     <h2 style="text-align: center; text-shadow: -2px 2px black; color:white;">Add Food to List</h2>
+    <form action="/addfood" method="post" id="addForm">
     <div style="border: 4px solid rgb(140, 157, 159); border-radius: 2px; background-color: rgba(140, 157, 159, 0.477); padding-top: 20px; padding-bottom: 20px; margin-bottom: 20px; width: 696px;">
         <div class="hoz" style="margin-bottom: 10px;">
-        <label style="text-shadow: -1px 1px black; color:white; font-weight: bold;">Food name:<input type="text" style="margin-left: 10px;"></input></label>
+        <label style="text-shadow: -1px 1px black; color:white; font-weight: bold;" for="name">Food name:<input type="text" style="margin-left: 10px;" name="name"></input></label>
+        </div>
+        <div class="hoz" style="margin-bottom: 10px;">
+            <label style="text-shadow: -1px 1px black; color:white; font-weight: bold;" for="foodType">Food type:<input type="text" style="margin-left: 10px;" name="foodType"></input></label>
+        </div>
+        <div class="hoz" style="margin-bottom: 10px;">
+            <label style="text-shadow: -1px 1px black; color:white; font-weight: bold;" for="ranking">Ranking:<input type="number" style="margin-left: 10px;" name="ranking"></input></label>
         </div>
     </div>
     <div class="hoz" style="width: 700px; background-color: rgba(140, 141, 159, 0.477); border: 2px solid rgb(140, 141, 159); border-radius: 1px;">
         <button type="submit" style="margin:10px;">Submit</button>
     </div>
-</div>
+    </form>
+    </div>
+    <script>
+        let _foodName="";
+        const _form = document.getElementById("addForm");
+        const fillForm = async(id)=>{
+            try {
+            const res = await fetch("/food/"+id,{method:"get"}); //get
+            if(!res.ok)throw new Error("Failed to get item to edit");
+
+            const food = await res.json();
+            _foodName = food.name;
+            for (const el of _form.elements) {
+                if(el.name!=undefined&&el.name!=""){
+                    _form.elements[el.name].value = food[el.name];
+                }
+            }
+            _form.action = `javascript: submitUpdate("${id}");`;
+            //_form.action = "/"; //return to main page
+            _form.method = "";
+
+            } catch (e) {console.error("Error: ",e);}
+        }
+
+        const submitUpdate = async(id)=>{
+            try{
+                //delete item
+                const _q = "/deletefood/name?name="+_foodName;
+                const res = await fetch(_q,{method:"delete"});
+                if(!res.ok)throw new Error("Failed to delete old list item");  
+                //add new item
+                _form.action = "/addfood";
+                _form.method = "post";
+                _form.submit();
+            }catch(e){console.error("Error: ",e);}
+        };
+
+        if(window.location.search.includes("id")){
+        const urlParams = new URLSearchParams(window.location.search);
+        const _id = urlParams.get('id');
+        fillForm(_id);
+        }
+        
+    </script>
 </body>
 </html>
