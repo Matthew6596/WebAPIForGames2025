@@ -123,5 +123,5 @@ const getRandCatImg = async()=>{
 }
 
 getRandCatImg(); //more important so do this first
-await getList();
-await getSessionUser();
+getList();
+getSessionUser();
