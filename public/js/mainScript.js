@@ -96,10 +96,8 @@ const getSessionUser = async()=>{
             const _user = await res.json();
             document.getElementById("currUser").innerText="Logged in as: "+_user;
             currentUser = _user;
-            getList();
-        }else{
-            getList();
         }
+        await getList();
     }).catch((e)=>{console.error(e);});
 }
 
