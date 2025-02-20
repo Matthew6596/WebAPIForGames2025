@@ -3,10 +3,10 @@ const addBtn = document.getElementById("addBtn");
 const registerBtn = document.getElementById("registerBtn");
 const loginBtn = document.getElementById("loginBtn");
 const logoutBtn = document.getElementById("logoutBtn");
+var currentUser=false;
 
 const getList = async(_msg)=>{
-    const loggedin = await isUserAuthenticated();
-    if(loggedin){
+    if(currentUser){
         registerBtn.remove();
         loginBtn.remove();
     }else{
@@ -25,7 +25,7 @@ const getList = async(_msg)=>{
             const li = document.createElement("li");
 
             let delete_btn,update_btn;
-            if(loggedin){
+            if(currentUser){
                 //Create delete button for list item
                 delete_btn = document.createElement("button");
                 delete_btn.innerText = "⌫";
@@ -47,7 +47,7 @@ const getList = async(_msg)=>{
             //Finish list item and append buttons
             li.className="food";
             li.innerHTML = `${e.name} <i>${e.foodType}</i>`;
-            if(loggedin){
+            if(currentUser){
                 li.appendChild(delete_btn);
                 li.appendChild(update_btn);
             }
@@ -64,8 +64,7 @@ const getList = async(_msg)=>{
 
 const deleteListItem = async(name)=>{
     try {
-        const _a = await fetch("/userauthenticated");
-        if(_a.status!=201){
+        if(!currentUser){
             if(_a.status==200) window.location.href = "/login";
             throw new Error("Failed to authenticate user");
         }
@@ -75,13 +74,6 @@ const deleteListItem = async(name)=>{
         //refresh list
         getList("Successfully deleted "+name);
     } catch (e) {console.error("Error: ",e); container.innerHTML=`<p style='color:red'>${e}</p>`;}
-}
-
-const isUserAuthenticated = async()=>{
-    try {
-        const _a = await fetch("/userauthenticated");
-        return (_a.status==201)
-    } catch (e) {return false;}
 }
 
 const editListItem = async(id)=>{
@@ -99,15 +91,14 @@ const getEditItem = async(id)=>{
 }
 
 const getSessionUser = async()=>{
-    const loggedin = await isUserAuthenticated();
-    if(!loggedin)return;
-    try{
-        const res = await fetch("/currentuser");
+    await fetch("/currentuser").then(async(res)=>{
         if(res.ok){
             const _user = await res.json();
             document.getElementById("currUser").innerText="Logged in as: "+_user;
+            currentUser = _user;
         }
-    }catch(e){console.error(e);}
+        await getList();
+    }).catch((e)=>{console.error(e);});
 }
 
 const getRandCatImg = async()=>{
@@ -123,5 +114,4 @@ const getRandCatImg = async()=>{
 }
 
 getRandCatImg(); //more important so do this first
-getList();
 getSessionUser();
