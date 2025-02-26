@@ -28,9 +28,8 @@ app.use(session({
     secret:process.env.SESSION_SECRET,
     resave:false,
     saveUninitialized:true,
-    sameSite:'none',
     proxy: true,
-    cookie:{secure:false/*true for https*/, maxAge:360000}
+    cookie:{secure:false/*true for https*/, maxAge:360000, sameSite:'none',domain: '.vercel.app'}
 }));
 
 function isAuthenticated(req,res,next){
