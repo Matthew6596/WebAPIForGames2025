@@ -40,10 +40,10 @@ db.once("open",()=>{console.log("Connected to MongoDB Database")});
 
 //=====Routes=====
 app.get("/",(req,res)=>{
-    res.sendFile(ppath("index.html"));
     console.log(req.session.user);
-    //if(req.session.user)res.json(req.session.user);
     res.status(505).json({message:"BRUH: "+req.session.user});
+    //res.sendFile(ppath("index.html"));
+    //if(req.session.user)res.json(req.session.user);
 });
 app.get("/additem.html",isAuthenticated,(req,res)=>{res.sendFile(ppath("additem.html"));});
 app.get("/classIndex",isAuthenticated,(req,res)=>{res.sendFile(ppath("classIndex.html"));});
