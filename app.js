@@ -41,6 +41,7 @@ db.once("open",()=>{console.log("Connected to MongoDB Database")});
 //=====Routes=====
 app.get("/",(req,res)=>{
     res.sendFile(ppath("index.html"));
+    console.log(req.session.user);
     //if(req.session.user)res.json(req.session.user);
 });
 app.get("/additem.html",isAuthenticated,(req,res)=>{res.sendFile(ppath("additem.html"));});
@@ -150,7 +151,7 @@ app.get("/login",(req,res)=>{
     res.sendFile(ppath("login.html"));
 });
 app.get("/logout",(req,res)=>{
-    req.session.destroy(()=>{res.redirect("/")});
+    //req.session.destroy(()=>{res.redirect("/")});
 });
 //=====End-Routes=====
 
