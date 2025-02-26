@@ -51,7 +51,10 @@ app.get("/classAddUser",(req,res)=>{res.sendFile(ppath("classAddUser.html"));});
 app.get("/addfooditem",isAuthenticated,(req,res)=>{res.sendFile(ppath("additem.html"));});
 //app.get("/userauthenticated",(req,res)=>{ if(req.session.user)res.sendStatus(201); else res.sendStatus(401); });
 app.get("/register",(req,res)=>{res.sendFile(ppath("register.html"));});
-app.get("/currentuser",(req,res)=>{if(req.session.user)res.json(req.session.user); else res.sendStatus(401);});
+app.get("/currentuser",(req,res)=>{
+    //if(req.session.user)res.json(req.session.user); else res.sendStatus(401);
+    res.json(req.session);
+});
 
 //read
 app.get("/food",async(req,res)=>{

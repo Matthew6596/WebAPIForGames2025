@@ -94,6 +94,7 @@ const getSessionUser = async()=>{
     await fetch("/currentuser").then(async(res)=>{
         if(res.ok){
             const _user = await res.json();
+            console.log(_user);
             document.getElementById("currUser").innerText="Logged in as: "+_user;
             currentUser = _user;
         }
