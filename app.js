@@ -24,7 +24,14 @@ app.use((req, res, next) => { //previous express.static let users bypass authent
 app.use(bodyParser.json());
 app.use(express.urlencoded({extended:true}));
 //Setting up session variable
-app.use(session({secret:process.env.SESSION_SECRET,resave:false,saveUninitialized:true,cookie:{secure:false/*true for https*/}}));
+app.use(session({
+    secret:process.env.SESSION_SECRET,
+    resave:false,
+    saveUninitialized:true,
+    sameSite:'none',
+    proxy: true,
+    cookie:{secure:false/*true for https*/, maxAge:360000}
+}));
 
 function isAuthenticated(req,res,next){
     if(req.session.user)return next();
